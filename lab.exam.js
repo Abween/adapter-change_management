@@ -122,109 +122,81 @@ class ServiceNowAdapter extends EventEmitter {
         this.emit(status, { id: this.id });
     }
 
-
     /**
-      * @memberof ServiceNowAdapter
-      * @method getRecord
-      * @summary Get ServiceNow Record
-      * @description Retrieves a record from ServiceNow.
-      *
-      * @param {ServiceNowAdapter~requestCallback} callback - The callback that
-      *   handles the response.
-      */
+     * @memberof ServiceNowAdapter
+     * @method getRecord
+     * @summary Get ServiceNow Record
+     * @description Retrieves a record from ServiceNow.
+     *
+     * @param {ServiceNowAdapter~requestCallback} callback - The callback that
+     *   handles the response.
+     */
     getRecord(callback) {
 
-        let dataError = null;
-        let dataReturn = null;
+        let result = [];
+        var tickets = [];
         this.connector.get((data, error) => {
             if (error) {
-                console.error(`\nError returned from GET request:\n${JSON.stringify(error)}`);
+                log.error(`\nError returned from GET request:\n${JSON.stringify(error)}`);
             }
+
+            //console.log('data type:' + typeof data);
             if (data.body) {
-                let allTickets = JSON.parse(data.body).result;
+                const bodyString = data.body;
+               // console.log('data body type:' + typeof bodyString);
+                const bodyObject = JSON.parse(bodyString);
+               // console.log('body object type:' + typeof bodyObject);
 
-                let allFilteredTickets = [];
+                const result = JSON.parse(JSON.stringify(bodyObject.result));
+               // console.log('body json type:' + typeof bodyJson);
 
-                //console.log(allTickets[0].sys_id);
-                for (let i = 0; i < allTickets.length; i++) {
-                    allFilteredTickets[i] = {
-                        "change_ticket_number": allTickets[i].number,
-                        "active": allTickets[i].active,
-                        "priority": allTickets[i].priority,
-                        "description": allTickets[i].description,
-                        "work_start": allTickets[i].work_start,
-                        "work_end": allTickets[i].work_end,
-                        "change_ticket_key": allTickets[i].sys_id
 
-                    };
+
+               // console.log(bodyObject);
+
+                for (let i = 0; i < result.length; i++) {
+                    const res = {
+                        change_ticket_number: result[i].number,
+                        active:result[i].active,
+                        priority:result[i].priority,
+                        description:result[i].description,
+                        work_start:result[i].work_start,
+                        work_end:result[i].work_end,
+                        change_ticket_key:result[i].sys_id
+                    }
+                    
+                    tickets[i] = res;
+
                 }
-                // console.log(JSON.stringify(allFilteredTickets));
-                dataReturn = JSON.stringify(allFilteredTickets);
-
-                callback(dataReturn, dataError);
+                //const arr []= bodyObject.result
+                //const bodyJson = JSON.stringify(bodyObject);
+                //console.log(arr[0]);
+                //console.log(bodyJson.result[0]);
+                //console.log(`\nResponse returned from GET request:\n${JSON.parse(data.body.number)}`)
+                //console.log('\nResponse returned from GET request:\n'+JSON.stringify(JSON.parse(data.body)))
+                //console.log(tickets[0].change_ticket_number);
+               return tickets;
             }
         });
-    }
 
-    /**
-   * @memberof ServiceNowAdapter
-   * @method postRecord
-   * @summary Create ServiceNow Record
-   * @description Creates a record in ServiceNow.
-   *
-   * @param {ServiceNowAdapter~requestCallback} callback - The callback that
-   *   handles the response.
-   */
-
-
-
-    postRecord(callback) {
-
-        let dataError = null;
-        let dataReturn = null;
+          
         
-        this.connector.post((data, error) => {
-            if (error) {
-                console.error(`\nError returned from GET request:\n${JSON.stringify(error)}`);
-            }
-            if (data.body) {
-                let cretaedTicket = JSON.parse(data.body).result;
-                let returnedCreatedTicket = {};
+    }
 
-                returnedCreatedTicket = {
-                    "change_ticket_number": cretaedTicket.number,
-                    "active": cretaedTicket.active,
-                    "priority": cretaedTicket.priority,
-                    "description": cretaedTicket.description,
-                    "work_start": cretaedTicket.work_start,
-                    "work_end": cretaedTicket.work_end,
-                    "change_ticket_key": cretaedTicket.sys_id
-                }
-                dataReturn = returnedCreatedTicket;
-                callback(dataReturn, dataError);
-            }
-            });
+   
+    postRecord(callback) {
+        /**
+         * Write the body for this function.
+         * The function is a wrapper for this.connector's post() method.
+         * Note how the object was instantiated in the constructor().
+         * post() takes a callback function.
+         */
+        this.connector.post(callback);
 
     }
 
 
-/*
-    test() {
-         this.getRecord((data, error) => {
-             if (error) {
-               console.error(`\nError returned from GET request:\n${JSON.stringify(error)}`);
-             }
-             console.log(`\nResponse returned from GET request:\n${JSON.stringify(data)}`)
-           });
-         
-              this.postRecord((data, error) => {
-             if (error) {
-               console.error(`\nError returned from GET request:\n${JSON.stringify(error)}`);
-             }
-             console.log(`\nResponse returned from GET request:\n${JSON.stringify(data)}`)
-           });
- 
-}*/
+
 }
 /*
 const test = new ServiceNowAdapter('123', {
@@ -235,6 +207,7 @@ const test = new ServiceNowAdapter('123', {
     },
     serviceNowTable: 'change_request'
 });
-
-test.test();*/
+ */
+//const t = test.getRecord();
+//console.log(test.getRecord());
 module.exports = ServiceNowAdapter;
